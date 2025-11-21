@@ -173,7 +173,7 @@ not port 22
 A: 网络流量捕获需要底层访问权限。在Linux/macOS上使用`sudo`，Windows上需要以管理员身份运行。
 
 ### Q: 监听不到流量？
-A: 
+A:
 1. 确认有管理员权限
 2. 检查网络接口是否正确
 3. 确认防火墙没有阻止
@@ -225,11 +225,3 @@ MIT License
 ## 👨‍💻 作者
 
 Ghost Wolf Lab
-
----
-
-<div align="center">
-Made with ❤️ using Python, Flask & Machine Learning
-<br>
-🎨 Cyberpunk Theme Inspired by Ghost in the Shell
-</div>
