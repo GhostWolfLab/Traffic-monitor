@@ -1,0 +1,54 @@
+{
+    "name": "traffic-monitor",
+    "version": "1.0.0",
+    "description": "异常流量检测工具 - 使用机器学习和赛博朋克风格可视化",
+    "main": "app.py",
+    "scripts": {
+        "start": "python app.py",
+        "dev": "python app.py",
+        "test": "pytest tests/"
+    },
+    "keywords": [
+        "traffic-analysis",
+        "anomaly-detection",
+        "machine-learning",
+        "network-security",
+        "cyberpunk",
+        "IDS",
+        "packet-analysis"
+    ],
+    "author": "Traffic Monitor Team",
+    "license": "MIT",
+    "dependencies": {
+        "flask": "^3.0.0",
+        "flask-socketio": "^5.3.5",
+        "flask-cors": "^4.0.0",
+        "scapy": "^2.5.0",
+        "scikit-learn": "^1.3.2",
+        "numpy": "^1.26.2"
+    },
+    "features": {
+        "detection_methods": [
+            "Isolation Forest",
+            "Statistical Model",
+            "Autoencoder (coming soon)"
+        ],
+        "animal_patterns": {
+            "🦜": "喋喋不休的鹦鹉 - 高频小包",
+            "🐊": "潜伏的鳄鱼 - 突发流量",
+            "🦈": "游弋的鲨鱼 - 端口扫描",
+            "🐘": "笨重的大象 - 大数据传输",
+            "🦎": "变色龙 - 协议切换",
+            "🐝": "忙碌的蜜蜂 - 多目标通信",
+            "🦇": "夜行蝙蝠 - 非常规端口",
+            "🐍": "盘旋的蟒蛇 - 持续流量",
+            "🦅": "俯冲的老鹰 - SYN扫描",
+            "🐢": "缓慢的乌龟 - 慢速扫描"
+        }
+    },
+    "requirements": {
+        "python": ">=3.8",
+        "admin_privileges": true,
+        "supported_os": ["Windows", "Linux", "macOS"]
+    }
+}

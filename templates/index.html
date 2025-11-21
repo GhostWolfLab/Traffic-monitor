@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Monitor - 异常流量检测</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    
+    <header class="header">
+        <h1 class="title">
+            <span class="glitch" data-text="TRAFFIC MONITOR">TRAFFIC MONITOR</span>
+        </h1>
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">状态:</span>
+                <span class="status-value" id="monitor-status">待机</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">数据包:</span>
+                <span class="status-value" id="packet-count">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">异常:</span>
+                <span class="status-value anomaly" id="anomaly-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label>检测方法:</label>
+            <select id="detection-method" class="cyber-select">
+                <option value="isolation_forest">Isolation Forest</option>
+                <option value="statistical">统计模型</option>
+                <option value="autoencoder">Autoencoder</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>监听接口:</label>
+            <select id="interface" class="cyber-select">
+                <option value="">自动选择</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>过滤器:</label>
+            <input type="text" id="filter" class="cyber-input" placeholder="BPF过滤器 (如: tcp port 80)">
+        </div>
+        
+        <div class="button-group">
+            <button id="start-btn" class="cyber-btn primary">
+                <span class="btn-text">开始监听</span>
+            </button>
+            <button id="stop-btn" class="cyber-btn danger" disabled>
+                <span class="btn-text">停止监听</span>
+            </button>
+            <button id="upload-btn" class="cyber-btn secondary">
+                <span class="btn-text">上传PCAP</span>
+            </button>
+            <input type="file" id="pcap-file" accept=".pcap,.pcapng" style="display: none;">
+            <button id="help-btn" class="cyber-btn" style="border-color: #00ff88; color: #00ff88;" title="使用帮助">
+                <span class="btn-text">❓ 帮助</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 帮助弹窗 -->
+    <div id="help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--primary-color); margin: 0;">🛡️ Traffic Monitor 使用指南</h2>
+                <button id="close-help" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>📋 工具介绍</h3>
+                    <p>Traffic Monitor 是一款基于机器学习的网络流量异常检测工具。</p>
+                    <p>支持多种异常检测算法（Isolation Forest、统计模型等），可识别 10 种威胁模式。</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🦜 威胁模式说明</h3>
+                    <ul class="pattern-list">
+                        <li><span class="pattern-emoji">🦜</span> <strong>鹦鹉</strong> - DDoS/SYN Flood 攻击</li>
+                        <li><span class="pattern-emoji">🐊</span> <strong>鳄鱼</strong> - 端口扫描活动</li>
+                        <li><span class="pattern-emoji">🦈</span> <strong>鲨鱼</strong> - 大流量传输</li>
+                        <li><span class="pattern-emoji">🐘</span> <strong>大象</strong> - 数据渗透/外泄</li>
+                        <li><span class="pattern-emoji">🦎</span> <strong>蜥蜴</strong> - 慢速扫描</li>
+                        <li><span class="pattern-emoji">🐝</span> <strong>蜜蜂</strong> - 高频短连接</li>
+                        <li><span class="pattern-emoji">🦇</span> <strong>蝙蝠</strong> - 异常时段流量</li>
+                        <li><span class="pattern-emoji">🐍</span> <strong>蛇</strong> - C2通信/后门</li>
+                        <li><span class="pattern-emoji">🦅</span> <strong>鹰</strong> - 多目标扫描</li>
+                        <li><span class="pattern-emoji">🐢</span> <strong>乌龟</strong> - 慢速攻击</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>🚀 使用方法</h3>
+                    <ol class="usage-list">
+                        <li><strong>上传PCAP分析：</strong>
+                            <ul>
+                                <li>点击"上传PCAP"按钮选择 .pcap 或 .pcapng 文件</li>
+                                <li>支持BPF过滤器，如：<code>tcp and port 80</code></li>
+                                <li>分析结果会显示在左右两侧面板</li>
+                            </ul>
+                        </li>
+                        <li><strong>实时监听（需安装Scapy）：</strong>
+                            <ul>
+                                <li>选择网络接口和检测方法</li>
+                                <li>输入BPF过滤器（可选）</li>
+                                <li>点击"开始监听"启动实时检测</li>
+                            </ul>
+                        </li>
+                        <li><strong>查看详情：</strong>
+                            <ul>
+                                <li>点击左侧"检测模式"查看各类威胁统计</li>
+                                <li>点击"数据包流"中的任意数据包查看详细信息</li>
+                                <li>右侧面板显示完整的数据包详情</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="help-section">
+                    <h3>🔍 BPF 过滤器语法</h3>
+                    <div class="code-examples">
+                        <p><code>tcp</code> - 只显示TCP流量</p>
+                        <p><code>port 80</code> - 80端口流量</p>
+                        <p><code>dst port 443</code> - 目标端口443</p>
+                        <p><code>host 192.168.1.1</code> - 指定主机流量</p>
+                        <p><code>net 192.168.0.0/24</code> - 指定网络段</p>
+                        <p><code>tcp and port 80</code> - 组合条件</p>
+                        <p><code>src host 10.0.0.1 and dst port 443</code> - 复杂过滤</p>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3>📝 生成测试数据</h3>
+                    <p>运行以下命令生成示例PCAP文件：</p>
+                    <div class="code-box">python generate_sample.py</div>
+                    <p>将生成包含多种威胁模式的 <code>sample_traffic.pcap</code> 文件供测试使用。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- 左侧面板 -->
+        <div class="left-panel">
+            <!-- 动物模式列表 -->
+            <div class="panel patterns-panel">
+                <div class="panel-header">
+                    <h2>🔍 检测模式</h2>
+                    <span class="panel-count" id="pattern-count">0</span>
+                </div>
+                <div class="panel-content" id="patterns-list">
+                    <div class="empty-state">等待检测数据...</div>
+                </div>
+            </div>
+            
+            <!-- 数据包列表 -->
+            <div class="panel packets-panel">
+                <div class="panel-header">
+                    <h2>📦 数据包流</h2>
+                    <button class="clear-btn" id="clear-packets">清空</button>
+                </div>
+                <div class="panel-content" id="packets-list">
+                    <div class="empty-state">暂无数据包...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧详情面板 -->
+        <div class="right-panel">
+            <div class="panel details-panel">
+                <div class="panel-header">
+                    <h2>📊 详细信息</h2>
+                    <button class="close-btn" id="close-details">×</button>
+                </div>
+                <div class="panel-content" id="details-content">
+                    <div class="empty-state">点击数据包查看详情...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 Ghost WolfLab. All rights reserved.</p>
+    </footer>
+
+    <!-- Socket.IO 客户端库 - 优先使用本地文件 -->
+    <script src="{{ url_for('static', filename='socket.io.min.js') }}" 
+            onerror="console.error('本地Socket.IO加载失败，尝试CDN'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js'"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+
+</body>
+</html>
